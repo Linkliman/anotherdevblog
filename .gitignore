@@ -1,0 +1,10 @@
+# Ignore Python cache folder
+__pycache__/
+
+# Ignore Python files
+*.pyc
+*.pyo
+*.pyd
+*.pyw
+*.pyz
+*.pyzw
