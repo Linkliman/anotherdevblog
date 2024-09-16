@@ -1,0 +1,41 @@
+version: '3'
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    depends_on:
+      database:
+        condition: service_healthy
+        restart: true
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+    command: uvicorn app.app:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
+      - RUN_MODE=${RUN_MODE}
+      - BLOG_PSQL_HOST=database
+      - BLOG_PSQL_USER=${DB_USER}
+      - BLOG_PSQL_PASSWORD=${DB_PASSWORD}
+      - BLOG_PSQL_DATABASE=${DB_DATABASE}
+
+  database:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_DATABASE}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_DATABASE}"]
+      interval: 1s
+      timeout: 5s
+      retries: 5
+volumes:
+  db_data:
